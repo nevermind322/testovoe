@@ -16,13 +16,13 @@ interface EasypayService {
         "app-key: $appKey",
         "v: $version"
     )
-    @GET("/payments")
-    fun getPayments(@Header("token") token : String)
+    @GET("payments")
+    suspend fun getPayments(@Header("token") token : String)
 
     @Headers(
         "app-key: $appKey",
         "v: $version"
     )
-    @POST("/login")
-    fun authorize(@Body creds : Credentials)
+    @POST("login")
+    suspend fun authorize(@Body creds : Credentials) : ServerAnswer
 }
