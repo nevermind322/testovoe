@@ -14,6 +14,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,7 +35,11 @@ import com.example.testovoe.ui.theme.shapes
 
 
 @Composable
-fun LoginScreen(onGetToken: (String) -> Unit, vm: LoginViewModel = viewModel()) {
+fun LoginScreen(
+    onGetToken: (String) -> Unit,
+    snackbarHostState: SnackbarHostState,
+    vm: LoginViewModel = viewModel()
+) {
     var login by remember {
         mutableStateOf("")
     }
@@ -44,7 +49,6 @@ fun LoginScreen(onGetToken: (String) -> Unit, vm: LoginViewModel = viewModel()) 
     }
 
     val state by vm.state.collectAsState()
-
 
     Column {
         LoginField(labelValue = "Login", login = login, onLoginChanged = { login = it })

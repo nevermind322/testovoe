@@ -12,11 +12,19 @@ val moshi: Moshi = Moshi.Builder()
     .addLast(KotlinJsonAdapterFactory())
     .add(
         PolymorphicJsonAdapterFactory.of(
-            ServerAnswer::class.java,
+            ServerLoginResponse::class.java,
             "success"
         ).withSubtype(
-            ServerAnswer.SuccessAnswer::class.java, "true"
-        ).withSubtype(ServerAnswer.ErrorAnswer::class.java, "false")
+            ServerLoginResponse.Success::class.java, "true"
+        ).withSubtype(ServerLoginResponse.Error::class.java, "false")
+    )
+    .add(
+        PolymorphicJsonAdapterFactory.of(
+            ServerPaymentsResponse::class.java,
+            "success"
+        ).withSubtype(
+            ServerPaymentsResponse.Success::class.java, "true"
+        ).withSubtype(ServerPaymentsResponse.Error::class.java, "false")
     )
     .build()
 

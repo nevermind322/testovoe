@@ -3,7 +3,7 @@ package com.example.testovoe.login
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.testovoe.api.EasypayService
-import com.example.testovoe.api.ServerAnswer
+import com.example.testovoe.api.ServerLoginResponse
 import com.example.testovoe.api.apiClient
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,10 +25,9 @@ class LoginViewModel(private val api: EasypayService = apiClient) : ViewModel() 
             _state.value = LoginScreenUiState.Loading
             val res = try {
                 when (val answer = api.authorize(creds)) {
-                    is ServerAnswer.SuccessAnswer -> LoginScreenUiState.Success(answer.response.token)
-                    is ServerAnswer.ErrorAnswer -> LoginScreenUiState.Error(
-                        answer.error.code,
-                        answer.error.error
+                    is ServerLoginResponse.Success -> LoginScreenUiState.Success(answer.response.token)
+                    is ServerLoginResponse.Error -> LoginScreenUiState.Error(
+                        answer.error.code, answer.error.error
                     )
                 }
             } catch (e: Throwable) {
