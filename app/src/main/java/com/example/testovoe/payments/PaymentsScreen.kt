@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CurrencyRuble
 import androidx.compose.material.icons.filled.ExitToApp
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
@@ -75,7 +76,13 @@ fun PaymentsScreen(
                     PaymentsList(list = (state as PaymentsScreenUiState.Success).data)
                 }
 
-                else -> Unit
+                else -> Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Button(onClick =
+                    { vm.getPayments(token) }) { Text(text = "Retry") }
+                }
             }
         }
     }

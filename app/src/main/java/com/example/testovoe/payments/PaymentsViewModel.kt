@@ -26,7 +26,7 @@ class PaymentsViewModel(private val paymentsRepository: PaymentsRepository = Pay
         loadJob = viewModelScope.launch {
             _state.value = PaymentsScreenUiState.Loading
             _state.value = when (val res = paymentsRepository.getPayments(token)) {
-                is RepoResult.Error -> PaymentsScreenUiState.Error(res.msg)
+                is RepoResult.Error -> PaymentsScreenUiState.Error(res.msg).also { isError = true }
                 is RepoResult.Success -> PaymentsScreenUiState.Success(res.data)
             }
         }
