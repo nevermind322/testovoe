@@ -3,7 +3,6 @@ package com.example.testovoe
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -25,9 +24,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     var token by remember { mutableStateOf<String?>(null) }
-
-    val snackbarHostState = remember { SnackbarHostState() }
-
     if (token == null)
         LoginScreen({ token = it })
     else
