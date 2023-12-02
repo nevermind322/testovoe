@@ -5,12 +5,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Date
 
 class PaymentsViewModel(private val paymentsRepository: PaymentsRepository = PaymentsRepository()) :
     ViewModel() {
@@ -20,8 +18,12 @@ class PaymentsViewModel(private val paymentsRepository: PaymentsRepository = Pay
 
     var isError by mutableStateOf(false)
 
+    var loadJob: Job? = null
+
     fun getPayments(token: String) {
-        viewModelScope.launch {
+        loadJob?.cancel()
+
+        loadJob = viewModelScope.launch {
             _state.value = PaymentsScreenUiState.Loading
             _state.value = when (val res = paymentsRepository.getPayments(token)) {
                 is RepoResult.Error -> PaymentsScreenUiState.Error(res.msg)
