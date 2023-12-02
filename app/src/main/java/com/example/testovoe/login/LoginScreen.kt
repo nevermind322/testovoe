@@ -1,101 +1,107 @@
 package com.example.testovoe.login
 
-import android.content.Context
-import android.widget.Toast
+
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.testovoe.ui.theme.shapes
 
 
+@OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun LoginScreen(
-    onGetToken: (String) -> Unit,
-    snackbarHostState: SnackbarHostState,
-    vm: LoginViewModel = viewModel()
+    onGetToken: (String) -> Unit, vm: LoginViewModel = viewModel()
 ) {
-    var login by remember {
-        mutableStateOf("")
-    }
+    var login by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
 
-    var password by remember {
-        mutableStateOf("")
-    }
-
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
     val state by vm.state.collectAsState()
 
-    Column {
-        LoginField(labelValue = "Login", login = login, onLoginChanged = { login = it })
-        PasswordField(
-            labelValue = "Parol",
-            password = password,
-            onPasswordChange = { password = it })
-        Button(onClick = { vm.authorize(Credentials(login, password)) }) {
-            Text("Войти")
+    LaunchedEffect(vm.isError) {
+        if (vm.isError) {
+            snackbarHostState.showSnackbar(vm.getMessage())
+            vm.resetState()
         }
-        val context = LocalContext.current
-        when (state) {
-            LoginScreenUiState.Start -> Unit
-            LoginScreenUiState.Loading -> CircularProgressIndicator()
-            is LoginScreenUiState.Success -> {
-                onGetToken((state as LoginScreenUiState.Success).token)
-                vm.resetState()
-            }
-
-            is LoginScreenUiState.Error -> {
-                showError(context, (state as LoginScreenUiState.Error).msg)
-                vm.resetState()
-            }
-
-            is LoginScreenUiState.Exception -> {
-                showError(
-                    context,
-                    "Error: ${(state as LoginScreenUiState.Exception).e.message ?: "Unknown Error"}"
-                )
-                vm.resetState()
-            }
-
-
-        }
-
     }
-}
 
-private fun showError(context: Context, msg: String) {
-    Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
-}
+    val keyboard = LocalSoftwareKeyboardController.current
 
-sealed class AuthUiState() {
-    data object Wait : AuthUiState()
-    data class Success(val token: String) : AuthUiState()
-    data class Error(val msg: String) : AuthUiState()
+    Scaffold(snackbarHost = { SnackbarHost(snackbarHostState) }) {
+        Box(
+            modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .padding(horizontal = 8.dp)
+            ) {
+                LoginField(labelValue = "Login", login = login, onLoginChanged = { login = it })
+                PasswordField(labelValue = "Password",
+                    password = password,
+                    onPasswordChange = { password = it })
+                Button(onClick = {
+                    keyboard?.hide()
+                    vm.authorize(Credentials(login, password))
+                }) {
+                    Text("Войти")
+                }
+                when (state) {
+                    LoginScreenUiState.Start -> Unit
+                    LoginScreenUiState.Loading -> Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth()
+                    ) { CircularProgressIndicator() }
 
+                    is LoginScreenUiState.Success -> {
+                        onGetToken((state as LoginScreenUiState.Success).token)
+                        vm.resetState()
+                    }
+
+                    else -> Unit
+                }
+            }
+        }
+    }
 }
 
 @Composable
@@ -135,15 +141,8 @@ fun PasswordField(
             .fillMaxWidth()
             .clip(shapes.small),
         label = { Text(text = labelValue) },
-        /*colors = TextFieldDefaults.outlinedTextFieldColors(
-            focusedBorderColor = Primary,
-            focusedLabelColor = Primary,
-            cursorColor = Primary,
-            backgroundColor = BgColor
-        ),*/
         keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Done
+            keyboardType = KeyboardType.Password, imeAction = ImeAction.Done
         ),
         singleLine = true,
         keyboardActions = KeyboardActions {
@@ -152,15 +151,11 @@ fun PasswordField(
         maxLines = 1,
         value = password,
         onValueChange = onPasswordChange,
-        /*  leadingIcon = {
-              Icon(painter = painterResource, contentDescription = "")
-          },*/
         trailingIcon = {
-
             val iconImage = if (passwordVisible.value) {
-                Icons.Filled.ArrowForward
+                Icons.Filled.Visibility
             } else {
-                Icons.Filled.ArrowBack
+                Icons.Filled.VisibilityOff
             }
 
             val description = if (passwordVisible.value) {

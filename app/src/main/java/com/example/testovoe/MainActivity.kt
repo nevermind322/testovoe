@@ -29,7 +29,7 @@ fun MainScreen() {
     val snackbarHostState = remember { SnackbarHostState() }
 
     if (token == null)
-        LoginScreen({ token = it }, snackbarHostState)
+        LoginScreen({ token = it })
     else
-        PaymentsScreen(token = token!!, { token = null }, snackbarHostState)
+        PaymentsScreen(token = token!!, { token = null })
 }
