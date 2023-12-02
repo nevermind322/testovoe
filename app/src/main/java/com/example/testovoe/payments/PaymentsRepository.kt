@@ -28,7 +28,7 @@ fun toPayments(apiAnswer: PaymentResponseJson): Payment {
     val title = apiAnswer.title
     val amount = apiAnswer.amount?.toDoubleOrNull()
     val created = apiAnswer.created?.toLongOrNull()
-    val time = if (created != null) Date(created) else null
+    val time = if (created != null) Date(created * 1000) else null
 
     return Payment(id, title, amount, time)
 }
