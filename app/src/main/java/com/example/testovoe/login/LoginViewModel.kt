@@ -8,10 +8,12 @@ import androidx.lifecycle.viewModelScope
 import com.example.testovoe.api.EasypayService
 import com.example.testovoe.api.ServerLoginResponse
 import com.example.testovoe.api.apiClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class LoginViewModel(private val api: EasypayService = apiClient) : ViewModel() {
 
@@ -44,7 +46,7 @@ class LoginViewModel(private val api: EasypayService = apiClient) : ViewModel() 
         authJob = viewModelScope.launch {
             _state.value = LoginScreenUiState.Loading
             val res = try {
-                when (val answer = api.authorize(creds)) {
+                when (val answer = withContext(Dispatchers.IO) { api.authorize(creds) }) {
                     is ServerLoginResponse.Success -> LoginScreenUiState.Success(answer.response.token)
                     is ServerLoginResponse.Error -> LoginScreenUiState.Error(
                         answer.error.code, answer.error.error
